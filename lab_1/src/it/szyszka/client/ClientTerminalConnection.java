@@ -31,7 +31,7 @@ public class ClientTerminalConnection {
 
     private void send(String message) {
         try {
-            userOutput.writeBytes(message);
+            userOutput.writeBytes(message + "\n");
             System.out.println("Message send!");
         } catch (IOException e) {
             System.err.println("Failed to send message: " + message);
@@ -39,7 +39,7 @@ public class ClientTerminalConnection {
     }
 
     private String writeMessage() throws IOException {
-        System.out.println("\nWrite your message (one line only): ");
+        System.out.println("Write your message (one line only): ");
         String message = userInput.readLine();
         return message;
     }

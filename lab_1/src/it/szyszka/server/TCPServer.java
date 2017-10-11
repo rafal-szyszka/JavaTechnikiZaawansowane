@@ -19,7 +19,7 @@ public class TCPServer {
 
     public TCPServer(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
-        terminalConnection = new ServerTerminalConnection(serverSocket.accept());
+        terminalConnection = new ServerTerminalConnection(serverSocket);
     }
 
     private void run() {
