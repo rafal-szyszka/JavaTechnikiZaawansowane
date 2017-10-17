@@ -1,9 +1,11 @@
 package it.szyszka.diffiehellmanschat.messages;
 
+import java.io.Serializable;
+
 /**
  * Created by rafal on 17.10.17.
  */
-public class ChatMessage {
+public class ChatMessage implements Serializable {
 
     private String senderNickname;
     private String content;
@@ -19,5 +21,10 @@ public class ChatMessage {
 
     public String getContent() {
         return content;
+    }
+
+    public ChatMessage setContent(String content) {
+        this.content = content;
+        return this;
     }
 }

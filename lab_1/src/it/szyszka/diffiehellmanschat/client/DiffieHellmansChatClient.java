@@ -5,14 +5,12 @@ import it.szyszka.diffiehellmanschat.messages.ChatMessage;
 import it.szyszka.diffiehellmanschat.server.ChatServer;
 
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 public class DiffieHellmansChatClient extends UnicastRemoteObject implements ChatClient{
 
     private String nickname;
-    private static ChatServer chatServer;
+    private ChatServer chatServer;
 
     protected DiffieHellmansChatClient(String nickname) throws RemoteException {
         this.nickname = nickname;
@@ -20,25 +18,34 @@ public class DiffieHellmansChatClient extends UnicastRemoteObject implements Cha
 
     public static void main(String argv[]) throws Exception {
         TerminalReader reader = TerminalReader.getInstance();
-        System.out.print("Enter server's port number: ");
-        Integer serverPort = Integer.parseInt(
-                reader.readTerminalLine()
-        );
-        System.out.print("Enter server's name: ");
-        String serverName = reader.readTerminalLine();
-        Registry registry = LocateRegistry.getRegistry(serverPort);
-        chatServer = (ChatServer) registry.lookup(serverName);
-        System.out.format("\nConnected to server on port: %d\nYou can chat now!\n", serverPort);
+        ClientConnectionInitializer initializer = new ClientConnectionInitializer();
+        initializer.initialize(reader);
+
+        DiffieHellmansChatClient client = (DiffieHellmansChatClient) initializer.getClient();
+        client.setChatServer(initializer.getServer());
+        client.run(reader);
     }
 
-    private void run() {
-        while(true) {
-
+    public void run(TerminalReader reader) throws RemoteException {
+        String input = "";
+        ChatMessage message = new ChatMessage(nickname, input);
+        while (!input.equalsIgnoreCase("q")) {
+            input = reader.readString("");
+            chatServer.receiveMessage(message.setContent(input));
         }
+    }
+
+    public void setChatServer(ChatServer chatServer) {
+        this.chatServer = chatServer;
+    }
+
+    @Override
+    public String getClientNickname() throws RemoteException {
+        return nickname;
     }
 
     @Override
     public void receiveMessage(ChatMessage message) throws RemoteException {
-        System.out.format("%s >>>:\t%s", message.getSenderNickname(), message.getContent());
+        System.out.format("%s@$:\t%s\n", message.getSenderNickname(), message.getContent());
     }
 }

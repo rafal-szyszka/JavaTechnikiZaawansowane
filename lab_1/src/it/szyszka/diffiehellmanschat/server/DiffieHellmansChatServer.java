@@ -4,6 +4,7 @@ import it.szyszka.diffiehellmanschat.client.ChatClient;
 import it.szyszka.diffiehellmanschat.messages.ChatMessage;
 
 import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -15,11 +16,14 @@ public class DiffieHellmansChatServer extends UnicastRemoteObject implements Cha
     public static final int ARGS_PORT = 0;
     public static final int ARGS_NAME = 1;
 
+    private static Registry registry;
     private ArrayList<ChatClient> registeredClients;
+    private String name;
 
-    protected DiffieHellmansChatServer(int port, ArrayList<ChatClient> registeredClients) throws RemoteException {
+    protected DiffieHellmansChatServer(int port, String name, ArrayList<ChatClient> registeredClients) throws RemoteException {
         super(port);
         this.registeredClients = registeredClients;
+        this.name = name;
     }
 
     public static void main(String[] args) {
@@ -27,8 +31,8 @@ public class DiffieHellmansChatServer extends UnicastRemoteObject implements Cha
         String serverName = args[ARGS_NAME];
 
         try {
-            ChatServer server = new DiffieHellmansChatServer(serverPort, new ArrayList<>());
-            Registry registry = LocateRegistry.createRegistry(serverPort);
+            ChatServer server = new DiffieHellmansChatServer(serverPort, serverName, new ArrayList<>());
+            registry = LocateRegistry.createRegistry(serverPort);
             registry.bind(serverName, server);
             System.out.println("Server ready!");
         } catch (RemoteException | AlreadyBoundException e) {
@@ -40,13 +44,50 @@ public class DiffieHellmansChatServer extends UnicastRemoteObject implements Cha
 
     @Override
     public Boolean registerNewClient(ChatClient client) throws RemoteException {
-        return null;
+        try {
+            registry.bind(client.getClientNickname(), client);
+            registeredClients.add(client);
+            return true;
+        } catch (AlreadyBoundException e) {
+            System.err.format("Failed to register client: %s", client.getClientNickname());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public void receiveMessage(ChatMessage message) throws RemoteException {
-        System.out.format("Server received message:\n---%s\n---\n", message.getContent());
+        System.out.format("Server received message:\n---\n%s\n---\n", message.getContent());
+        unbindRequest(message);
         broadcastMessage(message);
+    }
+
+    private void unbindRequest(ChatMessage message) {
+        if(message.getContent().equalsIgnoreCase("q")) {
+            registeredClients.forEach(client -> {
+                unbindAndRemoveClient(message, client);
+            });
+        }
+    }
+
+    private void unbindAndRemoveClient(ChatMessage message, ChatClient client) {
+        try {
+            if(client.getClientNickname().equalsIgnoreCase(message.getSenderNickname())) {
+                unbindClient(client);
+                registeredClients.remove(client);
+                broadcastMessage(new ChatMessage(name, client.getClientNickname() + " logout."));
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void unbindClient(ChatClient client) {
+        try {
+            registry.unbind(client.getClientNickname());
+        } catch (RemoteException | NotBoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

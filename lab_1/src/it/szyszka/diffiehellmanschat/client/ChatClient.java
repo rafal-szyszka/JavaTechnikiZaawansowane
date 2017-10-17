@@ -11,5 +11,6 @@ import java.rmi.RemoteException;
 public interface ChatClient extends Remote {
 
     void receiveMessage(ChatMessage message) throws RemoteException;
+    String getClientNickname() throws RemoteException;
 
 }
