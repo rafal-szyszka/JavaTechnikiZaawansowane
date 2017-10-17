@@ -1,8 +1,7 @@
-package it.szyszka.diffiehellmanschat.client;
+package it.szyszka.diffiehellmanschat.core.client;
 
-import it.szyszka.diffiehellmanschat.TerminalReader;
-import it.szyszka.diffiehellmanschat.server.ChatServer;
-import it.szyszka.diffiehellmanschat.server.Credentials;
+import it.szyszka.diffiehellmanschat.core.server.ChatServer;
+import it.szyszka.diffiehellmanschat.core.server.Credentials;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -19,12 +18,12 @@ public class ClientConnectionInitializer {
     private static final String READ_USER_NICKNAME = "Enter your nickname: ";
 
     private Credentials serverCredentials;
-    private TerminalReader reader;
+    private ClientInterface reader;
 
     private ChatClient client;
     private ChatServer server;
 
-    public ChatServer initialize(TerminalReader reader) {
+    public ChatServer initialize(ClientInterface reader) {
         this.reader = reader;
         serverCredentials = readServerCredentials();
         requestServerConnection();
@@ -34,17 +33,17 @@ public class ClientConnectionInitializer {
     private void requestServerConnection() {
         Registry registry = null;
         try {
-            System.out.format("Connecting to %s...\n", serverCredentials.getName());
+            reader.writeMessage("Connecting to " + serverCredentials.getName() + "...\n");
             registry = LocateRegistry.getRegistry(serverCredentials.getPort());
         } catch (RemoteException e) {
-            System.err.format("Connection on port %d rejected.\n", serverCredentials.getPort());
+            reader.writeMessage("Connection on port " + serverCredentials.getPort() + " rejected.\n");
             e.printStackTrace();
         }
         try {
             server = (ChatServer) registry.lookup(serverCredentials.getName());
             registerNewClient(server);
         } catch (RemoteException | NotBoundException e) {
-            System.err.format("Server with name %s doesn't exist.\n", serverCredentials.getName());
+            reader.writeMessage("Server with name " + serverCredentials.getName() + " doesn't exist.\n");
             e.printStackTrace();
         }
     }
@@ -52,14 +51,14 @@ public class ClientConnectionInitializer {
     private void registerNewClient(ChatServer chatServer) {
         try {
             client = new DiffieHellmansChatClient(
-                    reader.readString(READ_USER_NICKNAME)
+                    reader.readNickname(READ_USER_NICKNAME)
             );
-            System.out.format("Registering client %s...\n", client.getClientNickname());
+            reader.writeMessage("Registering client " + client.getClientNickname() + "...\n");
             Boolean isClientRegistered = chatServer.registerNewClient(client);
             if (isClientRegistered) {
-                System.out.format("%s connected to %s.\n", client.getClientNickname(), serverCredentials.getName());
+                reader.writeMessage(client.getClientNickname() + " connected to " + serverCredentials.getName() + "\n");
             } else {
-                System.err.format("Failed to connect to: %s.\n", serverCredentials.getName());
+                reader.writeMessage("Failed to connect to: " + serverCredentials.getName() + "\n");
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -68,8 +67,8 @@ public class ClientConnectionInitializer {
 
     private Credentials readServerCredentials() {
         return new Credentials(
-                reader.readInt(READ_SERVER_PORT),
-                reader.readString(READ_SERVER_NAME)
+                reader.readPort(READ_SERVER_PORT),
+                reader.readName(READ_SERVER_NAME)
         );
     }
 

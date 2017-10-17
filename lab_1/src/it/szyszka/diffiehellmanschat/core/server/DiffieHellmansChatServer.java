@@ -1,7 +1,7 @@
-package it.szyszka.diffiehellmanschat.server;
+package it.szyszka.diffiehellmanschat.core.server;
 
-import it.szyszka.diffiehellmanschat.client.ChatClient;
-import it.szyszka.diffiehellmanschat.messages.ChatMessage;
+import it.szyszka.diffiehellmanschat.core.client.ChatClient;
+import it.szyszka.diffiehellmanschat.core.messages.ChatMessage;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
@@ -47,6 +47,7 @@ public class DiffieHellmansChatServer extends UnicastRemoteObject implements Cha
         try {
             registry.bind(client.getClientNickname(), client);
             registeredClients.add(client);
+            //broadcastMessage(new ChatMessage(name, "Client " + client.getClientNickname() + " has joined."));
             return true;
         } catch (AlreadyBoundException e) {
             System.err.format("Failed to register client: %s", client.getClientNickname());
@@ -57,7 +58,7 @@ public class DiffieHellmansChatServer extends UnicastRemoteObject implements Cha
 
     @Override
     public void receiveMessage(ChatMessage message) throws RemoteException {
-        System.out.format("Server received message:\n---\n%s\n---\n", message.getContent());
+        System.out.format("Server received message:\t@# %s #@\n", message.getContent());
         unbindRequest(message);
         broadcastMessage(message);
     }

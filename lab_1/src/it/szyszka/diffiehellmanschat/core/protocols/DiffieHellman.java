@@ -1,4 +1,4 @@
-package it.szyszka.diffiehellmanschat.protocols;
+package it.szyszka.diffiehellmanschat.core.protocols;
 
 import java.math.BigInteger;
 

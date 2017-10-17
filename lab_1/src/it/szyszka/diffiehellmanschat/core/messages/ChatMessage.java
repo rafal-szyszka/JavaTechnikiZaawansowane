@@ -1,4 +1,4 @@
-package it.szyszka.diffiehellmanschat.messages;
+package it.szyszka.diffiehellmanschat.core.messages;
 
 import java.io.Serializable;
 

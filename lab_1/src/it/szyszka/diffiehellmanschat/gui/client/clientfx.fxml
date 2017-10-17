@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="500.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.szyszka.diffiehellmanschat.gui.client.ClientController">
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
+   <children>
+      <TextArea fx:id="chatWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="470.0" wrapText="true" />
+      <TextField fx:id="sendMessage" maxHeight="-Infinity" minHeight="-Infinity" onAction="#sendMessage" prefHeight="30.0" />
+      <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="40.0" prefWidth="200.0" spacing="5.0">
+         <children>
+            <Label text="Port" />
+            <TextField fx:id="serverPort" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="60.0" />
+            <Label text="Nazwa">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Label>
+            <TextField fx:id="serverName" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="100.0" />
+            <Label text="Nick" />
+            <TextField fx:id="nickname" prefWidth="100.0" />
+            <Button mnemonicParsing="false" onAction="#connectToServer" text="Connect">
+               <HBox.margin>
+                  <Insets left="20.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+   </children>
+</VBox>

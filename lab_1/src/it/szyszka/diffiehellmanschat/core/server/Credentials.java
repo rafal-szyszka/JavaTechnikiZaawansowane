@@ -1,4 +1,4 @@
-package it.szyszka.diffiehellmanschat.server;
+package it.szyszka.diffiehellmanschat.core.server;
 
 /**
  * Created by rafal on 17.10.17.

@@ -1,6 +1,6 @@
-package it.szyszka.diffiehellmanschat.client;
+package it.szyszka.diffiehellmanschat.core.client;
 
-import it.szyszka.diffiehellmanschat.messages.ChatMessage;
+import it.szyszka.diffiehellmanschat.core.messages.ChatMessage;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
