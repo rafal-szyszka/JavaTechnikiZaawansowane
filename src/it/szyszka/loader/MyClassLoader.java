@@ -1,8 +1,12 @@
 package it.szyszka.loader;
 
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
 /**
  * Created by rafal on 16.10.17.
@@ -10,18 +14,55 @@ import java.net.URISyntaxException;
 public class MyClassLoader extends ClassLoader {
 
     private String baseDir;
+    private String packageName;
+    private ArrayList<String> classNames;
+    private ArrayList<Class<?>> classes;
 
-    public MyClassLoader(ClassLoader parent, String baseDir) {
+    public MyClassLoader(ClassLoader parent, String baseDir, String packageName) {
         super(parent);
         this.baseDir = baseDir;
+        this.packageName = packageName;
+        classNames = new ArrayList<>();
+        classes = new ArrayList<>();
+        init();
     }
 
-    private Class getClass(String name) {
-        String fileName = baseDir + name.replace('.', File.separatorChar) + ".class";
-        byte[] b = null;
+    private void init() {
+        try(Stream<Path> paths = Files.walk(Paths.get(baseDir))) {
+            paths
+                    .filter(Files::isRegularFile)
+                    .forEach(file -> classNames.add(
+                            file.toAbsolutePath().toString()
+                                    .replace(baseDir, "")
+                                    .replace(".class", "")
+                                    .replace(File.separatorChar, '.')
+                    ));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<Class<?>> loadAll() {
+        classNames.forEach(
+                className -> {
+                    try {
+                        classes.add(
+                                loadClass(className)
+                        );
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
+        return classes;
+    }
+
+    private Class getClass(String className) {
+        String fileName = baseDir + className.replace('.', File.separatorChar) + ".class";
+        byte[] b;
         try {
             b = loadClassFileData(fileName);
-            Class clazz = defineClass(name, b, 0, b.length);
+            Class clazz = defineClass(className, b, 0, b.length);
             resolveClass(clazz);
             return clazz;
         } catch (IOException | URISyntaxException e) {
@@ -32,7 +73,7 @@ public class MyClassLoader extends ClassLoader {
 
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException {
-        if(name.startsWith("it.szyszka")) {
+        if(name.startsWith(packageName)) {
             System.out.format("Loading class: \'%s\' using \'MyClassLoader\'\n", name);
             return getClass(name);
         }
